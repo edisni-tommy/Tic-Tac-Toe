@@ -31,7 +31,11 @@
 		<Compiler>
 			<Add option="-Wall" />
 		</Compiler>
-		<Unit filename="game.h" />
+		<Unit filename="board.cpp" />
+		<Unit filename="board.h" />
+		<Unit filename="gameplay.cpp" />
+		<Unit filename="gameplay.h" />
+		<Unit filename="initialize.cpp" />
 		<Unit filename="main.cpp" />
 		<Extensions />
 	</Project>
