@@ -31,11 +31,11 @@
 		<Compiler>
 			<Add option="-Wall" />
 		</Compiler>
-		<Unit filename="board.cpp" />
-		<Unit filename="board.h" />
+		<Unit filename="computer.cpp" />
+		<Unit filename="computer.h" />
 		<Unit filename="gameplay.cpp" />
 		<Unit filename="gameplay.h" />
-		<Unit filename="initialize.cpp" />
+		<Unit filename="initialize.h" />
 		<Unit filename="main.cpp" />
 		<Extensions />
 	</Project>
