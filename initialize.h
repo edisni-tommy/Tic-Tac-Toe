@@ -1,6 +1,7 @@
 #ifndef _INITIALIZE_
 #define _INITIALIZE_
 #include "gameplay.h"
+#include "computer.h"
 #include <SDL.h>
 #include <iostream>
 const int SCREEN_WIDTH = 600;
@@ -39,43 +40,51 @@ bool init(SDL_Window* gWindow, SDL_Renderer* &renderer)
 }
 
 void run(SDL_Renderer* &renderer, bool &quit){
-    //Gameplay Gameplay(renderer);
-    Gameplay Gameplay;
-    Gameplay.width = SCREEN_WIDTH/(Gameplay.board_width+2);
-    Gameplay.height = SCREEN_HEIGHT/(Gameplay.board_height+2);
-    Gameplay.draw_board(renderer);
-    Gameplay.createboardstate();
-    SDL_Event e;
-    while( !quit )
-    {
-        //Handle events on queue
-        while( SDL_PollEvent( &e ) != 0 )
-        {
-            //User requests quit
-            if( e.type == SDL_QUIT )
-            {
-                quit = true;
-            }
-                else if (e.type == SDL_MOUSEBUTTONDOWN){
-                      Gameplay.getcoordinate();
-                      Gameplay.update(renderer);
-                      if (Gameplay.check_win() == "Player 1 win"){
-                        std::cout << "Player 1 win";
-                        //restart game..
-                    }
-                        else if (Gameplay.check_win() == "Player 2 win"){
-                            std::cout << "Player 2 win";
-                            //restart game or sth
-                        }
-                            else if (Gameplay.check_win() == "Tie"){
-                                std::cout << "Tie";
-                                //restart or not
-                            }
-            }
-        }
+    if (1 + 1 == 2){
+        Computer Computer;
+        Computer.width = SCREEN_WIDTH/(Computer.board_width+2);
+        Computer.height = SCREEN_HEIGHT/(Computer.board_height+2);
+        Computer.run_computer(renderer,quit);
     }
+        else{
+            //If play with human
+            Gameplay Gameplay;
+            Gameplay.width = SCREEN_WIDTH/(Gameplay.board_width+2);
+            Gameplay.height = SCREEN_HEIGHT/(Gameplay.board_height+2);
+            Gameplay.draw_board(renderer);
+            Gameplay.createboardstate();
+            SDL_Event e;
+            while( !quit )
+            {
+                //Handle events on queue
+                while( SDL_PollEvent( &e ) != 0 )
+                {
+                    //User requests quit
+                    if( e.type == SDL_QUIT )
+                    {
+                        quit = true;
+                    }
+                        else if (e.type == SDL_MOUSEBUTTONDOWN){
+                              Gameplay.getcoordinate();
+                              Gameplay.update(renderer);
+                              if (Gameplay.check_win() == "Player 1 win"){
+                                std::cout << "Player 1 win";
+                                //restart game..
+                            }
+                                else if (Gameplay.check_win() == "Player 2 win"){
+                                    std::cout << "Player 2 win";
+                                    //restart game or sth
+                                }
+                                    else if (Gameplay.check_win() == "Tie"){
+                                        std::cout << "Tie";
+                                        //restart or not
+                                    }
+                    }
+                }
+            }
 
 
+        }
 }
 
 #endif

@@ -2,7 +2,7 @@
 #include <SDL.h>
 #include <iostream>
 
-void Gameplay::draw_board(SDL_Renderer* renderer){
+void Gameplay::draw_board(SDL_Renderer* &renderer){
      SDL_SetRenderDrawColor(renderer, 255, 255 , 255 ,0);
      SDL_RenderClear(renderer);
      for (int i = 1; i <= board_height ; i++)
@@ -18,11 +18,15 @@ void Gameplay::draw_board(SDL_Renderer* renderer){
     SDL_RenderPresent(renderer);
 }
 void Gameplay::createboardstate(){
-    board_state = new std::string *[16];
-    for (int i = 1; i <= 15; i++)
-    board_state[i] = new std::string [16];
-    for (int i = 1; i <= 15; i++)
-        for (int j = 1; j <= 15; j++){
+    board_state = new std::string *[18];
+    for (int i = 0; i <= 17; i++)
+    board_state[i] = new std::string [18];
+    for (int i = 0; i <= 17; i++)
+        for (int j = 0; j <= 17; j++){
+            board_state[i][j] = "block";
+        }
+    for (int i = 1; i <= board_height; i++)
+        for (int j = 1; j <= board_width; j++){
             board_state[i][j] = "empty";
         }
 }
@@ -42,13 +46,13 @@ void Gameplay::getcoordinate() {
         if (fine) break;
      }
 }
-void Gameplay::draw_X(SDL_Renderer* renderer, int col, int row){
+void Gameplay::draw_X(SDL_Renderer* &renderer, int col, int row){
     SDL_SetRenderDrawColor(renderer, 255, 0, 0 ,255);
     SDL_RenderDrawLine(renderer,col*width,row*height,(col+1)*width,(row+1)*height);
     SDL_RenderDrawLine(renderer,(col+1)*width,row*height,col*width,(row+1)*height);
     SDL_RenderPresent(renderer);
 }
-int  Gameplay::draw_O(SDL_Renderer* renderer, int col, int row){
+int  Gameplay::draw_O(SDL_Renderer* &renderer, int col, int row){
     int x = (2*col+1)*width/2;
     int y = (2*row+1)*height/2;
     int radius = width/2;
@@ -195,8 +199,7 @@ std::string Gameplay::check_win(){
         }
     return "Tie";
 }
-
-void Gameplay::update(SDL_Renderer* renderer){
+void Gameplay::update(SDL_Renderer* &renderer){
     if (state == "X"){
       if (board_state[row][col] == "empty"){
             draw_X(renderer,col,row);

@@ -2,10 +2,18 @@
 #define COMPUTER_H
 #include<iostream>
 #include<algorithm>
-#include "button.h"
+#include "gameplay.h"
 
-class Computer {
+class Computer : public Gameplay {
     private:
-      int board_height, board_width;
+    public:
+      void run_computer(SDL_Renderer* &renderer, bool &quit);
+      int minimax(bool is_computerturn, int alpha, int beta, int depth);
+      int heuristic_val();
+      bool check_insideboard(int _row, int _col);
+      void find_bestmove();
 
 };
+
+
+#endif
