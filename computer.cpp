@@ -8,8 +8,8 @@ const int dy[] = {-1 ,  0 ,  1 , 1 };
 
 int Computer::minimax (bool is_computerturn, int alpha, int beta, int depth){
     int score = 0, bestscore = 0;
-    if (check_win() == "Player 1 win") return 1e8;
-        else if (check_win() == "Player 2 win") return -1e8;
+    if (check_win() == "Player 1 win") return 1e8+depth;
+        else if (check_win() == "Player 2 win") return -1e8-depth;
             else if (check_win() == "Tie") return 0;
     if (depth == 1) return heuristic_val();
     if (is_computerturn){
@@ -67,29 +67,31 @@ int Computer::heuristic_val(){
                             }
                                 else cntline++;
                     }
-                if (cntline < 3) continue;
-                    else cntline = 3;
+                    if (cntline < 3) continue;
+                        else cntline = 3;
 
-                for (int r = 1; r <= 3; r++){
-                    if (!check_insideboard(i-r*dx[t],j-r*dy[t]) || board_state[i-r*dx[t]][j-r*dy[t]] == "O"){
-                        if (r == 3) numblock++;
-                        break;
-                    }
-                        else if (board_state[i-r*dx[t]][j-r*dy[t]] == "X"){
-                            cntline++;
-                            if (board_state[i-(r-1)*dx[t]][j-(r-1)*dy[t]] == "X") cntx += 10;
-                                else cntx += 5;
+                    for (int r = 1; r <= 3; r++){
+                        if (!check_insideboard(i-r*dx[t],j-r*dy[t]) || board_state[i-r*dx[t]][j-r*dy[t]] == "O"){
+                            if (r == 3) numblock++;
+                            break;
                         }
-                            else cntline++;
-                }
-                if (cntline >= winif){
-                    if (cntx >= 35) curval *= 2;
-                    if (numblock == 0) cntx *= 2;
-                        else if (numblock == 2) continue;
-                    curval += (cntx + (cntline - winif));
+                            else if (board_state[i-r*dx[t]][j-r*dy[t]] == "X"){
+                                cntline++;
+                                if (board_state[i-(r-1)*dx[t]][j-(r-1)*dy[t]] == "X") cntx += 10;
+                                    else cntx += 5;
+                            }
+                                else cntline++;
                     }
-                }
-                val += curval;
+                    if (cntline >= winif){
+                        if (cntx == 40 && numblock < 2) cntx += 1e6;
+                            else if (cntx >= 35 || (cntx == 30 && numblock == 0)) cntx+=1e4;
+                                else if (numblock == 0) cntx *= 2;
+                                    else if (numblock == 2) continue;
+                      //  if (curval >= 60)
+                        curval += (cntx + (cntline - winif));
+                        }
+                    }
+                    val += curval;
 
             }
                else if (board_state[i][j] == "O"){
@@ -99,13 +101,13 @@ int Computer::heuristic_val(){
                     for (int t = 0; t <= 3; t++){
                         int cntline = 1, cnto = 10;
                         for (int r = 1; r <= 3; r++){
-                            if (!check_insideboard(i-r*dx[t],j-r*dy[t]) || board_state[i-r*dx[t]][j-r*dy[t]] == "X"){
+                            if (!check_insideboard(i+r*dx[t],j+r*dy[t]) || board_state[i+r*dx[t]][j+r*dy[t]] == "X"){
                                 if (r == 3) numblock++;
                                 break;
                             }
-                                else if (board_state[i-r*dx[t]][j-r*dy[t]] == "O"){
+                                else if (board_state[i+r*dx[t]][j+r*dy[t]] == "O"){
                                     cntline++;
-                                    if (board_state[i-(r-1)*dx[t]][j-(r-1)*dy[t]] == "O") cnto += 10;
+                                    if (board_state[i+(r-1)*dx[t]][j+(r-1)*dy[t]] == "O") cnto += 10;
                                         else cnto += 5;
                                 }
                                     else cntline++;
@@ -125,9 +127,10 @@ int Computer::heuristic_val(){
                                     else cntline++;
                         }
                         if (cntline >= winif){
-                              if (cnto >= 35) curval *= 2;
-                              if (numblock == 0) cnto *= 2;
-                                    else if (numblock == 2) continue;
+                              if (cnto == 40 && numblock < 2) cnto += 1e7;
+                                else if (cnto >= 35 || (cnto == 30 && numblock == 0)) cnto += 1e5;
+                                    else if (numblock == 0) cnto *= 2;
+                                        else if (numblock == 2) continue;
                             curval += (cnto + (cntline - winif));
                         }
                     }
@@ -197,6 +200,7 @@ void Computer::run_computer(SDL_Renderer* &renderer, bool &quit){
                         update(renderer);
                         if (check_win() == "Player 2 win"){
                             std::cout << "Player win";
+                            quit = true;
                             //restart game or sth
                         }
                             else if (check_win() == "Tie"){

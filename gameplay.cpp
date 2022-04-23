@@ -136,9 +136,10 @@ std::string Gameplay::check_win(){
                 }
             }
         }
-    //check diagonal'
+    //check diagonal
+
     int cnt = 1;
-    for (int j = 1; j <= board_width; j++)
+    for (int j = 1; j <= board_width; j++){
         for (int t = 1; t+1 <= board_height && t+j <= board_width; t++){
             if (board_state[t+1][t+j] == "empty") {
                     cnt = 1;
@@ -151,8 +152,10 @@ std::string Gameplay::check_win(){
                     else return "Player 2 win";
             }
         }
+        cnt = 1;
+    }
     cnt = 1;
-    for (int j = 2; j <= board_height; j++)
+    for (int j = 2; j <= board_height; j++){
         for (int t = 1; t+j <= board_height && t+1 <= board_width; t++){
             if (board_state[t+j][t+1] == "empty") {
                     cnt = 1;
@@ -165,8 +168,10 @@ std::string Gameplay::check_win(){
                     else return "Player 2 win";
             }
         }
+        cnt = 1;
+    }
     cnt = 1;
-    for (int j = board_width; j >= 1; j--)
+    for (int j = board_width; j >= 1; j--){
         for (int t = 1; t+1 <= board_height && j-t >= 1; t++){
             if (board_state[t+1][j-t] == "empty") {
                     cnt = 1;
@@ -179,8 +184,10 @@ std::string Gameplay::check_win(){
                     else return "Player 2 win";
             }
         }
+        cnt = 1;
+    }
     cnt = 1;
-    for (int j = 2; j <= board_height; j++)
+    for (int j = 2; j <= board_height; j++){
         for (int t = 1; t+j <= board_height && board_width-t >= 1; t++){
             if (board_state[t+j][board_width-t] == "empty") {
                     cnt = 1;
@@ -193,6 +200,8 @@ std::string Gameplay::check_win(){
                     else return "Player 2 win";
             }
         }
+        cnt = 1;
+    }
     for (int i = 1 ; i <= board_height; i++)
         for (int j = 1; j <= board_width; j++){
             if (board_state[i][j] == "empty") return "In game";
