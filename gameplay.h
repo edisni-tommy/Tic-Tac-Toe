@@ -1,10 +1,10 @@
 #ifndef GAMEPLAY_H
 #define GAMEPLAY_H
-#include <SDL.h>
-#include <string>
-#include <vector>
 
-class Gameplay{
+#include <vector>
+#include "LTexture.h"
+
+class Gameplay: public LTexture{
     protected:
         std::string **board_state;
         int row=5, col=5;
@@ -26,10 +26,13 @@ class Gameplay{
         void createboardstate();
         void getcoordinate();
         void draw_X(SDL_Renderer* &renderer, int col, int row);
-        int  draw_O(SDL_Renderer* &renderer, int col, int row);
+        void draw_O(SDL_Renderer* &renderer, int col, int row);
         std::string check_win();
+        void run_vshuman(SDL_Renderer* &renderer, bool &quit);
 
 };
+
+
 
 #endif
 

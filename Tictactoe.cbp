@@ -31,12 +31,16 @@
 		<Compiler>
 			<Add option="-Wall" />
 		</Compiler>
+		<Unit filename="LTexture.h" />
+		<Unit filename="button.cpp" />
+		<Unit filename="button.h" />
 		<Unit filename="computer.cpp" />
 		<Unit filename="computer.h" />
 		<Unit filename="gameplay.cpp" />
 		<Unit filename="gameplay.h" />
 		<Unit filename="initialize.h" />
 		<Unit filename="main.cpp" />
+		<Unit filename="variable.h" />
 		<Extensions />
 	</Project>
 </CodeBlocks_project_file>

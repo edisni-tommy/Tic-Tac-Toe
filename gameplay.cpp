@@ -1,9 +1,7 @@
 #include "gameplay.h"
-#include <SDL.h>
 #include <iostream>
-
 void Gameplay::draw_board(SDL_Renderer* &renderer){
-     SDL_SetRenderDrawColor(renderer, 255, 255 , 255 ,0);
+     SDL_SetRenderDrawColor(renderer, 255, 255 , 255 , -2);
      SDL_RenderClear(renderer);
      for (int i = 1; i <= board_height ; i++)
         for (int j = 1; j <= board_width ; j++){
@@ -12,9 +10,14 @@ void Gameplay::draw_board(SDL_Renderer* &renderer){
                         rect.y = i*height;
                         rect.w = width;
                         rect.h = height;
-                        SDL_SetRenderDrawColor(renderer, 0, 0 , 0, 255);
+                        SDL_SetRenderDrawColor(renderer, 40, 56 , 76 , -2);
+                        SDL_RenderFillRect(renderer, &rect);
+                        SDL_SetRenderDrawColor(renderer, 231 ,236 ,237 , 0);
                         SDL_RenderDrawRect(renderer, &rect);
+
         }
+
+
     SDL_RenderPresent(renderer);
 }
 void Gameplay::createboardstate(){
@@ -46,56 +49,27 @@ void Gameplay::getcoordinate() {
         if (fine) break;
      }
 }
-void Gameplay::draw_X(SDL_Renderer* &renderer, int col, int row){
-    SDL_SetRenderDrawColor(renderer, 255, 0, 0 ,255);
-    SDL_RenderDrawLine(renderer,col*width,row*height,(col+1)*width,(row+1)*height);
-    SDL_RenderDrawLine(renderer,(col+1)*width,row*height,col*width,(row+1)*height);
-    SDL_RenderPresent(renderer);
-}
-int  Gameplay::draw_O(SDL_Renderer* &renderer, int col, int row){
-    int x = (2*col+1)*width/2;
-    int y = (2*row+1)*height/2;
-    int radius = width/2;
-    int offsetx, offsety, d;
-            int status;
-            offsetx = 0;
-            offsety = radius;
-            d = radius -1;
-            status = 0;
-
-            while (offsety >= offsetx) {
-                status += SDL_RenderDrawPoint(renderer, x + offsetx, y + offsety);
-                status += SDL_RenderDrawPoint(renderer, x + offsety, y + offsetx);
-                status += SDL_RenderDrawPoint(renderer, x - offsetx, y + offsety);
-                status += SDL_RenderDrawPoint(renderer, x - offsety, y + offsetx);
-                status += SDL_RenderDrawPoint(renderer, x + offsetx, y - offsety);
-                status += SDL_RenderDrawPoint(renderer, x + offsety, y - offsetx);
-                status += SDL_RenderDrawPoint(renderer, x - offsetx, y - offsety);
-                status += SDL_RenderDrawPoint(renderer, x - offsety, y - offsetx);
-
-                if (status < 0) {
-                    status = -1;
-                    break;
-                }
-
-                if (d >= 2*offsetx) {
-                    d -= 2*offsetx + 1;
-                    offsetx +=1;
-                }
-                else if (d < 2 * (radius - offsety)) {
-                    d += 2 * offsety - 1;
-                    offsety -= 1;
-                }
-                else {
-                    d += 2 * (offsety - offsetx - 1);
-                    offsety -= 1;
-                    offsetx += 1;
-                }
-            }
-                SDL_RenderPresent(renderer);
-
-        return status;
-
+void Gameplay::draw_X(SDL_Renderer* &renderer, int col , int row){
+    if (loadMedia(renderer, "pictures/x.png")){
+        SDL_Rect dstrect;
+        dstrect.h = height-height/3;
+        dstrect.w = width-width/3;
+        dstrect.x = col*height+height/6;
+        dstrect.y = row*width+width/6;
+        SDL_RenderCopy(renderer,gTexture, NULL, &dstrect);
+        SDL_RenderPresent(renderer);
+    };
+};
+void Gameplay::draw_O(SDL_Renderer* &renderer, int col, int row){
+    if (loadMedia(renderer, "pictures/o.png")){
+        SDL_Rect dstrect;
+        dstrect.h = height-height/3;
+        dstrect.w = width-width/3;
+        dstrect.x = col*height+height/6;
+        dstrect.y = row*width+width/6;
+        SDL_RenderCopy(renderer,gTexture, NULL, &dstrect);
+        SDL_RenderPresent(renderer);
+    };
 }
 std::string Gameplay::check_win(){
     //check horizontal
@@ -224,4 +198,39 @@ void Gameplay::update(SDL_Renderer* &renderer){
             }
         }
 }
-
+void Gameplay::run_vshuman(SDL_Renderer* &renderer, bool &quit){
+    draw_board(renderer);
+    createboardstate();
+    SDL_Event e;
+    while( !quit )
+    {
+        //Handle events on queue
+        while( SDL_PollEvent( &e ) != 0 )
+        {
+            //User requests quit
+            if( e.type == SDL_QUIT )
+            {
+                quit = true;
+            }
+                else if (e.type == SDL_MOUSEBUTTONDOWN){
+                      getcoordinate();
+                      update(renderer);
+                      if (check_win() == "Player 1 win"){
+                        std::cout << "Player 1 win";
+                        quit = true;
+                        //restart game..
+                    }
+                        else if (check_win() == "Player 2 win"){
+                            std::cout << "Player 2 win";
+                            quit = true;
+                            //restart game or sth
+                        }
+                            else if (check_win() == "Tie"){
+                                std::cout << "Tie";
+                                quit = true;
+                                //restart or not
+                            }
+            }
+        }
+    }
+}

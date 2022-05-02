@@ -9,7 +9,7 @@ const int dy[] = {-1 ,  0 ,  1 , 1 };
 int Computer::minimax (bool is_computerturn, int alpha, int beta, int depth){
     int score = 0, bestscore = 0;
     if (check_win() == "Player 1 win") return 1e8+depth;
-        else if (check_win() == "Player 2 win") return -1e8-depth;
+        else if (check_win() == "Player 2 win") return -1e8+depth;
             else if (check_win() == "Tie") return 0;
     if (depth == 1) return heuristic_val();
     if (is_computerturn){
@@ -189,6 +189,7 @@ void Computer::run_computer(SDL_Renderer* &renderer, bool &quit){
                   //  testboardstate();
                     if (check_win() == "Player 1 win"){
                         std::cout << "Computer win";
+                        quit = true;
                         //restart game..
                     }
                         else if (check_win() == "Tie"){
@@ -205,6 +206,7 @@ void Computer::run_computer(SDL_Renderer* &renderer, bool &quit){
                         }
                             else if (check_win() == "Tie"){
                                 std::cout << "Tie";
+                                quit = true;
                                 //restart or not
                             }
             }
