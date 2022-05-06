@@ -3,8 +3,8 @@
 void Gameplay::draw_board(SDL_Renderer* &renderer){
      SDL_SetRenderDrawColor(renderer, 255, 255 , 255 , -2);
      SDL_RenderClear(renderer);
-     for (int i = 1; i <= board_height ; i++)
-        for (int j = 1; j <= board_width ; j++){
+     for (int i = 1; i <= boardSize ; i++)
+        for (int j = 1; j <= boardSize ; j++){
                         SDL_Rect rect;
                         rect.x = (j)*width;
                         rect.y = i*height;
@@ -16,8 +16,6 @@ void Gameplay::draw_board(SDL_Renderer* &renderer){
                         SDL_RenderDrawRect(renderer, &rect);
 
         }
-
-
     SDL_RenderPresent(renderer);
 }
 void Gameplay::createboardstate(){
@@ -28,8 +26,8 @@ void Gameplay::createboardstate(){
         for (int j = 0; j <= 17; j++){
             board_state[i][j] = "block";
         }
-    for (int i = 1; i <= board_height; i++)
-        for (int j = 1; j <= board_width; j++){
+    for (int i = 1; i <= boardSize; i++)
+        for (int j = 1; j <= boardSize; j++){
             board_state[i][j] = "empty";
         }
 }
@@ -37,8 +35,8 @@ void Gameplay::getcoordinate() {
     int x,y;
     SDL_GetMouseState( &x, &y);
     bool fine = false;
-    for (int i = 1; i <= board_height+1 ; i++){
-        for (int j = 1; j <= board_width+1 ; j++){
+    for (int i = 1; i <= boardSize+1 ; i++){
+        for (int j = 1; j <= boardSize+1 ; j++){
             if (j*width > x && i*height > y){
                 row = i-1;
                 col = j-1;
@@ -73,12 +71,12 @@ void Gameplay::draw_O(SDL_Renderer* &renderer, int col, int row){
 }
 std::string Gameplay::check_win(){
     //check horizontal
-    for (int i = 1; i <= board_height; i++)
-        for (int j = 2; j <= board_width; j++){
+    for (int i = 1; i <= boardSize; i++)
+        for (int j = 2; j <= boardSize; j++){
             if (board_state[i][j] == "empty") continue;
             if (board_state[i][j] == board_state[i][j-1]){
                 int cnt = 2;
-                for (int t = j+1; t <= board_width; t++){
+                for (int t = j+1; t <= boardSize; t++){
                     if (board_state[i][t] == board_state[i][j]) cnt++;
                         else {
                             j = t;
@@ -92,12 +90,12 @@ std::string Gameplay::check_win(){
             }
         }
      // check vertical
-     for (int j = 1; j <= board_width; j++)
-        for (int i = 2; i <= board_height; i++){
+     for (int j = 1; j <= boardSize; j++)
+        for (int i = 2; i <= boardSize; i++){
             if (board_state[i][j] == "empty") continue;
             if (board_state[i][j] == board_state[i-1][j]){
                 int cnt = 2;
-                for (int t = i+1; t <= board_height; t++){
+                for (int t = i+1; t <= boardSize; t++){
                     if (board_state[t][j] == board_state[i][j]) cnt++;
                         else {
                           i = t;
@@ -113,8 +111,8 @@ std::string Gameplay::check_win(){
     //check diagonal
 
     int cnt = 1;
-    for (int j = 1; j <= board_width; j++){
-        for (int t = 1; t+1 <= board_height && t+j <= board_width; t++){
+    for (int j = 1; j <= boardSize; j++){
+        for (int t = 1; t+1 <= boardSize && t+j <= boardSize; t++){
             if (board_state[t+1][t+j] == "empty") {
                     cnt = 1;
                     continue;
@@ -129,8 +127,8 @@ std::string Gameplay::check_win(){
         cnt = 1;
     }
     cnt = 1;
-    for (int j = 2; j <= board_height; j++){
-        for (int t = 1; t+j <= board_height && t+1 <= board_width; t++){
+    for (int j = 2; j <= boardSize; j++){
+        for (int t = 1; t+j <= boardSize && t+1 <= boardSize; t++){
             if (board_state[t+j][t+1] == "empty") {
                     cnt = 1;
                     continue;
@@ -145,8 +143,8 @@ std::string Gameplay::check_win(){
         cnt = 1;
     }
     cnt = 1;
-    for (int j = board_width; j >= 1; j--){
-        for (int t = 1; t+1 <= board_height && j-t >= 1; t++){
+    for (int j = boardSize; j >= 1; j--){
+        for (int t = 1; t+1 <= boardSize && j-t >= 1; t++){
             if (board_state[t+1][j-t] == "empty") {
                     cnt = 1;
                     continue;
@@ -161,23 +159,23 @@ std::string Gameplay::check_win(){
         cnt = 1;
     }
     cnt = 1;
-    for (int j = 2; j <= board_height; j++){
-        for (int t = 1; t+j <= board_height && board_width-t >= 1; t++){
-            if (board_state[t+j][board_width-t] == "empty") {
+    for (int j = 2; j <= boardSize; j++){
+        for (int t = 1; t+j <= boardSize && boardSize-t >= 1; t++){
+            if (board_state[t+j][boardSize-t] == "empty") {
                     cnt = 1;
                     continue;
             }
-            if (board_state[t+j][board_width-t] == board_state[t+j-1][board_width-t+1]) cnt++;
+            if (board_state[t+j][boardSize-t] == board_state[t+j-1][boardSize-t+1]) cnt++;
                 else cnt = 1;
             if (cnt == winif){
-                if (board_state[t+j][board_width-t] == "X") return "Player 1 win";
+                if (board_state[t+j][boardSize-t] == "X") return "Player 1 win";
                     else return "Player 2 win";
             }
         }
         cnt = 1;
     }
-    for (int i = 1 ; i <= board_height; i++)
-        for (int j = 1; j <= board_width; j++){
+    for (int i = 1 ; i <= boardSize; i++)
+        for (int j = 1; j <= boardSize; j++){
             if (board_state[i][j] == "empty") return "In game";
         }
     return "Tie";
@@ -233,4 +231,13 @@ void Gameplay::run_vshuman(SDL_Renderer* &renderer, bool &quit){
             }
         }
     }
+}
+void Gameplay::setGameData(int _height, int _width){
+    boardSize = _height;
+    boardSize = _width;
+    height = SCREEN_HEIGHT/(boardSize+2);
+    width = SCREEN_WIDTH/(boardSize+2);
+    if (boardSize == 3) winif = 3;
+        else if (boardSize == 5) winif = 4;
+            else winif = 5;
 }

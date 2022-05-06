@@ -5,7 +5,6 @@ Button::Button()
 	position.x = 0;
 	position.y = 0;
 
-	currentSprite = BUTTON_MOUSE_OUT;
 }
 
 Button::Button(int x, int y)
@@ -13,7 +12,6 @@ Button::Button(int x, int y)
 	position.x = x;
 	position.y = y;
 
-	currentSprite = BUTTON_MOUSE_OUT;
 }
 
 void Button::SetPosition(int x, int y)

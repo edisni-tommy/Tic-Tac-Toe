@@ -4,13 +4,15 @@
 #include <string>
 #include <SDL.h>
 #include <SDL_image.h>
+#include "variable.h"
 
 
 
 class LTexture{
-    protected:
+    private:
         int pHeight;
         int pWidth;
+    protected:
     public :
         SDL_Texture* gTexture = NULL;
         void free(){
