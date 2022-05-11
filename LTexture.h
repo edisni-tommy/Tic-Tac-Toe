@@ -4,6 +4,7 @@
 #include <string>
 #include <SDL.h>
 #include <SDL_image.h>
+#include <SDL_ttf.h>
 #include "variable.h"
 
 
@@ -12,7 +13,7 @@ class LTexture{
     private:
         int pHeight;
         int pWidth;
-    protected:
+        TTF_Font *gFont = NULL;
     public :
         SDL_Texture* gTexture = NULL;
         void free(){
@@ -67,6 +68,39 @@ class LTexture{
             }
 
             return success;
+        }
+        bool loadFromRenderedText(SDL_Renderer* &renderer, std::string textureText, SDL_Color textColor )
+        {
+            //Get rid of preexisting texture
+            free();
+
+            //Render text surface
+            SDL_Surface* textSurface = TTF_RenderText_Solid( gFont, textureText.c_str(), textColor );
+            if( textSurface == NULL )
+            {
+                printf( "Unable to render text surface! SDL_ttf Error: %s\n", TTF_GetError() );
+            }
+            else
+            {
+                //Create texture from surface pixels
+                gTexture = SDL_CreateTextureFromSurface( renderer, textSurface );
+                if( gTexture == NULL )
+                {
+                    printf( "Unable to create texture from rendered text! SDL Error: %s\n", SDL_GetError() );
+                }
+                else
+                {
+                    //Get image dimensions
+                    pWidth = textSurface->w;
+                    pHeight = textSurface->h;
+                }
+
+                //Get rid of old surface
+                SDL_FreeSurface( textSurface );
+            }
+
+            //Return success
+            return gTexture != NULL;
         }
         void Render(int x, int y, SDL_Renderer* renderer, SDL_Rect* clip){
             SDL_Rect renderSpace = { x, y, pWidth, pHeight };

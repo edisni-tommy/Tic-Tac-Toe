@@ -5,7 +5,7 @@
 #include "button.h"
 #include <stdio.h>
 #include <iostream>
-
+#include <SDL_mixer.h>
 
 
 bool init(SDL_Window* gWindow, SDL_Renderer* &renderer)
@@ -48,6 +48,11 @@ bool init(SDL_Window* gWindow, SDL_Renderer* &renderer)
                             printf( "SDL_image could not initialize! SDL_image Error: %s\n", IMG_GetError() );
                             success = false;
                         }
+                        if( Mix_OpenAudio( 44100, MIX_DEFAULT_FORMAT, 2, 2048 ) < 0 )
+                        {
+                            printf( "SDL_mixer could not initialize! SDL_mixer Error: %s\n", Mix_GetError() );
+                            success = false;
+                        }
                     }
 		}
 	}
@@ -81,239 +86,280 @@ void run(SDL_Renderer* &renderer, bool &quit){
             PlayButtons.loadMedia(renderer,"pictures/Playbutton.png");
             LTexture MapSizes;
             MapSizes.loadMedia(renderer,"pictures/Mapsize.png");
-            LTexture Playing;
-            Playing.loadMedia(renderer,"pictures/Playing.png");
-            SDL_Event e;
+            Mix_Chunk *Select = NULL;
+            Select = Mix_LoadWAV("sounds/SelectButton.wav");
             Computer Computer;
             Gameplay Gameplay;
+            if (Select == NULL) printf( "Failed to load high sound effect! SDL_mixer Error: %s\n", Mix_GetError() );
             bool play = false;
             bool computer_on = true;
             bool mainmenu = true;
             bool haschooseMap = false;
             bool hasinteract = false;
+            bool playagain = false;
             while (!quit){
+                while (mainmenu){
+                    SDL_Event e;
                     while (SDL_PollEvent(&e) != 0){
                         if (e.type == SDL_QUIT){
                             quit = true;
+                            mainmenu = true;
                         }
-                        if (mainmenu){
-                            if (PlayWithComputer.IsInside(&e,PLAY_WITH_COMPUTER_WIDTH,COMMON_BUTTON_HEIGHT)){
+                        if (PlayWithComputer.IsInside(&e,PLAY_WITH_COMPUTER_WIDTH,COMMON_BUTTON_HEIGHT)){
+                            switch (e.type){
+                                case SDL_MOUSEMOTION:
+                                    {
+                                    if (!hasinteract){
+                                    SDL_Rect srRect{COMMON_SOURCE_RECT_POSX,0,PLAY_WITH_COMPUTER_WIDTH,COMMON_BUTTON_HEIGHT};
+                                    PlayWithComputer.render(&srRect,renderer,MenuButtons);
+                                    SDL_RenderPresent(renderer);
+                                    hasinteract = true;
+                                    }
+                                    break;
+                                    }
+                                case SDL_MOUSEBUTTONDOWN:
+                                {
+                                    Mix_PlayChannel(-1,Select,0);
+                                    hasinteract = false;
+                                    play = true;
+                                    mainmenu = false;
+                                    computer_on = true;
+                                    break;
+
+                                }
+                            }
+                        }
+                        else if (PlayWithHuman.IsInside(&e,PLAY_WITH_HUMAN_WIDTH,COMMON_BUTTON_HEIGHT)){
+                            switch (e.type)
+                            {
+                                case SDL_MOUSEMOTION:
+                                    {
+                                    if (!hasinteract){
+                                    SDL_Rect srRect{COMMON_SOURCE_RECT_POSX,COMMON_BUTTON_HEIGHT,PLAY_WITH_HUMAN_WIDTH,COMMON_BUTTON_HEIGHT};
+                                    PlayWithHuman.render(&srRect,renderer,MenuButtons);
+                                    SDL_RenderPresent(renderer);
+                                    hasinteract = true;
+                                    }
+                                    break;
+                                    }
+                                case SDL_MOUSEBUTTONDOWN:
+                                    {
+                                        Mix_PlayChannel(-1,Select,0);
+                                        hasinteract = false;
+                                        play = true;
+                                        mainmenu = false;
+                                        computer_on = false;
+                                        break;
+                                    }
+                            }
+                        }
+                        else if (Settings.IsInside(&e,SETTING_WIDTH,COMMON_BUTTON_HEIGHT)){
+                            switch (e.type)
+                            {
+                                case SDL_MOUSEMOTION:
+                                    {
+                                    if (!hasinteract){
+                                    SDL_Rect srRect{COMMON_SOURCE_RECT_POSX,COMMON_BUTTON_HEIGHT*2,SETTING_WIDTH,COMMON_BUTTON_HEIGHT};
+                                    Settings.render(&srRect,renderer,MenuButtons);
+                                    SDL_RenderPresent(renderer);
+                                    hasinteract = true;
+                                    }
+                                    }
+                                    break;
+                                case SDL_MOUSEBUTTONDOWN:
+                                    {
+                                    Mix_PlayChannel(-1,Select,0);
+                                    break;
+                                    }
+                            }
+                        }
+                        else if (EXIT.IsInside(&e,EXIT_WIDTH,COMMON_BUTTON_HEIGHT)){
+                            switch (e.type){
+                                case SDL_MOUSEMOTION:
+                                    {
+                                    if (!hasinteract){
+                                    SDL_Rect srRect{COMMON_SOURCE_RECT_POSX,COMMON_BUTTON_HEIGHT*3,EXIT_WIDTH,COMMON_BUTTON_HEIGHT};
+                                    EXIT.render(&srRect,renderer,MenuButtons);
+                                    SDL_RenderPresent(renderer);
+                                    hasinteract = true;
+                                    }
+                                    break;
+                                    }
+                                case SDL_MOUSEBUTTONDOWN:
+                                    mainmenu = false;
+                                    quit = true;
+                                    break;
+                            }
+
+                        }
+                            else {
+                                    hasinteract = false;
+                                    SDL_SetRenderDrawColor( renderer, 0xFF, 0xFF, 0xFF, 0xFF );
+                                    SDL_RenderClear(renderer);
+                                    SDL_SetRenderDrawColor(renderer, 33, 40, 69, 4);
+                                    SDL_RenderClear(renderer);
+                                    SDL_RenderCopy(renderer,MainMenu.gTexture,NULL,NULL);
+                                    SDL_RenderPresent(renderer);
+
+                            }
+                        }
+                    }
+
+                while (play){
+                    SDL_Event e;
+                    while (SDL_PollEvent(&e) != 0){
+                        if (e.type == SDL_QUIT){
+                            quit = true;
+                            play = false;
+                        }
+                        if (!haschooseMap){
+                            if (THRxTHR.IsInside(&e,THRxTHR_WIDTH,BIG_BUTTON_HEIGHT)){
                                 switch (e.type){
                                     case SDL_MOUSEMOTION:
-                                        {
+                                    {
                                         if (!hasinteract){
-                                        SDL_Rect srRect{COMMON_SOURCE_RECT_POSX,0,PLAY_WITH_COMPUTER_WIDTH,COMMON_BUTTON_HEIGHT};
-                                        PlayWithComputer.render(&srRect,renderer,MenuButtons);
+                                            SDL_Rect srRect{0,0,THRxTHR_WIDTH,BIG_BUTTON_HEIGHT};
+                                            THRxTHR.render(&srRect,renderer,MapSizes);
+                                            SDL_RenderPresent(renderer);
+                                            hasinteract = true;
+                                        }
+
+                                        break;
+                                    }
+                                    case SDL_MOUSEBUTTONDOWN:
+                                    {
+                                        Mix_PlayChannel(-1,Select,0);
+                                        SDL_Delay(10);
+                                        if (computer_on) Computer.setGameData(3,3);
+                                            else Gameplay.setGameData(3,3);
+                                        haschooseMap = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            else if (FIVExFIVE.IsInside(&e,FIVExFIVE_WIDTH,BIG_BUTTON_HEIGHT)){
+                                switch (e.type){
+                                    case SDL_MOUSEMOTION:
+                                    {
+                                        if (!hasinteract){
+                                        SDL_Rect srRect{0,BIG_BUTTON_HEIGHT,FIVExFIVE_WIDTH,BIG_BUTTON_HEIGHT};
+                                        FIVExFIVE.render(&srRect,renderer,MapSizes);
                                         SDL_RenderPresent(renderer);
                                         hasinteract = true;
                                         }
                                         break;
-                                        }
+                                    }
                                     case SDL_MOUSEBUTTONDOWN:
                                     {
-                                        hasinteract = false;
-                                        play = true;
-                                        mainmenu = false;
+                                        Mix_PlayChannel(-1,Select,0);
+                                        SDL_Delay(10);
+                                        if (computer_on) Computer.setGameData(5,5);
+                                            else Gameplay.setGameData(5,5);
+                                        haschooseMap = true;
                                         break;
-
                                     }
                                 }
-
                             }
-                                else if (PlayWithHuman.IsInside(&e,PLAY_WITH_HUMAN_WIDTH,COMMON_BUTTON_HEIGHT)){
-                                    switch (e.type)
+                            else if (NINExNINE.IsInside(&e,NINExNINE_WIDTH,BIG_BUTTON_HEIGHT)){
+                                switch (e.type){
+                                    case SDL_MOUSEMOTION:
                                     {
-                                        case SDL_MOUSEMOTION:
-                                            {
-                                            if (!hasinteract){
-                                            SDL_Rect srRect{COMMON_SOURCE_RECT_POSX,COMMON_BUTTON_HEIGHT,PLAY_WITH_HUMAN_WIDTH,COMMON_BUTTON_HEIGHT};
-                                            PlayWithHuman.render(&srRect,renderer,MenuButtons);
+                                        if (!hasinteract){
+                                        SDL_Rect srRect{0,BIG_BUTTON_HEIGHT*2,NINExNINE_WIDTH,BIG_BUTTON_HEIGHT};
+                                        NINExNINE.render(&srRect,renderer,MapSizes);
+                                        SDL_RenderPresent(renderer);
+                                        hasinteract = true;
+                                        }
+                                        break;
+                                    }
+                                    case SDL_MOUSEBUTTONDOWN:
+                                    {
+                                        Mix_PlayChannel(-1,Select,0);
+                                        SDL_Delay(10);
+                                        if (computer_on) Computer.setGameData(9,9);
+                                            else Gameplay.setGameData(9,9);
+                                        haschooseMap = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            else if (TWELVExTWELVE.IsInside(&e,TWELVExTWELVE_WIDTH,BIG_BUTTON_HEIGHT)){
+                                switch (e.type){
+                                    case SDL_MOUSEMOTION:
+                                    {
+                                        if (!hasinteract){
+                                        SDL_Rect srRect{0,BIG_BUTTON_HEIGHT*3,TWELVExTWELVE_WIDTH,BIG_BUTTON_HEIGHT};
+                                        TWELVExTWELVE.render(&srRect,renderer,MapSizes);
+                                        SDL_RenderPresent(renderer);
+                                        hasinteract = true;
+                                        }
+                                        break;
+                                    }
+                                    case SDL_MOUSEBUTTONDOWN:
+                                    {
+                                        Mix_PlayChannel(-1,Select,0);
+                                        SDL_Delay(10);
+                                        if (computer_on) Computer.setGameData(12,12);
+                                            else Gameplay.setGameData(12,12);
+                                        haschooseMap = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            else if (Back.IsInside(&e,BACK_BUTTON_WIDTH,BACK_BUTTON_HEIGHT)){
+                                switch (e.type){
+                                case SDL_MOUSEMOTION:
+                                    {
+                                        if (!hasinteract){
+                                            SDL_Rect srRect{srBACK_BUTTON_POSX,srBACK_BUTTON_POSY,BACK_BUTTON_WIDTH,BACK_BUTTON_HEIGHT};
+                                            Back.render(&srRect,renderer,MapSizes);
                                             SDL_RenderPresent(renderer);
                                             hasinteract = true;
-                                            }
-                                            break;
-                                            }
-                                        case SDL_MOUSEBUTTONDOWN:
-                                            {
-                                                hasinteract = false;
-                                                play = true;
-                                                mainmenu = false;
-                                                computer_on = false;
-                                                break;
-                                            }
+                                        }
+                                        break;
                                     }
 
-
-                                }
-                                    else if (Settings.IsInside(&e,SETTING_WIDTH,COMMON_BUTTON_HEIGHT)){
-                                        switch (e.type)
-                                        {
-                                            case SDL_MOUSEMOTION:
-                                                if (!hasinteract){
-                                                SDL_Rect srRect{COMMON_SOURCE_RECT_POSX,COMMON_BUTTON_HEIGHT*2,SETTING_WIDTH,COMMON_BUTTON_HEIGHT};
-                                                Settings.render(&srRect,renderer,MenuButtons);
-                                                SDL_RenderPresent(renderer);
-                                                hasinteract = true;
-                                                }
-                                                break;
-                                        }
+                                case SDL_MOUSEBUTTONDOWN:
+                                    {
+                                        Mix_PlayChannel(-1,Select,0);
+                                        mainmenu = true;
+                                        play = false;
+                                        break;
                                     }
-                                        else if (EXIT.IsInside(&e,EXIT_WIDTH,COMMON_BUTTON_HEIGHT)){
-                                            switch (e.type){
-                                                case SDL_MOUSEMOTION:
-                                                    {
-                                                    if (!hasinteract){
-                                                    SDL_Rect srRect{COMMON_SOURCE_RECT_POSX,COMMON_BUTTON_HEIGHT*3,EXIT_WIDTH,COMMON_BUTTON_HEIGHT};
-                                                    EXIT.render(&srRect,renderer,MenuButtons);
-                                                    SDL_RenderPresent(renderer);
-                                                    hasinteract = true;
-                                                    }
-                                                    break;
-                                                    }
-                                                case SDL_MOUSEBUTTONDOWN:
-                                                    quit = true;
-                                                    break;
-                                            }
-
-                                        }
-                                            else {
-                                                    hasinteract = false;
-                                                    SDL_SetRenderDrawColor( renderer, 0xFF, 0xFF, 0xFF, 0xFF );
-                                                    SDL_RenderClear(renderer);
-                                                    SDL_SetRenderDrawColor(renderer, 33, 40, 69, 4);
-                                                    SDL_RenderClear(renderer);
-                                                    SDL_RenderCopy(renderer,MainMenu.gTexture,NULL,NULL);
-                                                    SDL_RenderPresent(renderer);
-
-                                            }
-                        }
-                            else if (play && !haschooseMap){
-                                if (THRxTHR.IsInside(&e,THRxTHR_WIDTH,BIG_BUTTON_HEIGHT)){
-                                    switch (e.type){
-                                        case SDL_MOUSEMOTION:
-                                        {
-                                            if (!hasinteract){
-                                                SDL_Rect srRect{0,0,THRxTHR_WIDTH,BIG_BUTTON_HEIGHT};
-                                                THRxTHR.render(&srRect,renderer,MapSizes);
-                                                SDL_RenderPresent(renderer);
-                                                hasinteract = true;
-                                            }
-
-                                            break;
-                                        }
-                                        case SDL_MOUSEBUTTONDOWN:
-                                        {
-                                            if (computer_on) Computer.setGameData(3,3);
-                                                else Gameplay.setGameData(3,3);
-                                            haschooseMap = true;
-                                            break;
-                                        }
-                                    }
-                                }
-                                    else if (FIVExFIVE.IsInside(&e,FIVExFIVE_WIDTH,BIG_BUTTON_HEIGHT)){
-                                        switch (e.type){
-                                            case SDL_MOUSEMOTION:
-                                            {
-                                                if (!hasinteract){
-                                                SDL_Rect srRect{0,BIG_BUTTON_HEIGHT,FIVExFIVE_WIDTH,BIG_BUTTON_HEIGHT};
-                                                FIVExFIVE.render(&srRect,renderer,MapSizes);
-                                                SDL_RenderPresent(renderer);
-                                                hasinteract = true;
-                                                }
-                                                break;
-                                            }
-                                            case SDL_MOUSEBUTTONDOWN:
-                                            {
-                                                if (computer_on) Computer.setGameData(5,5);
-                                                    else Gameplay.setGameData(5,5);
-                                                haschooseMap = true;
-                                                break;
-                                            }
-                                        }
-                                    }
-                                        else if (NINExNINE.IsInside(&e,NINExNINE_WIDTH,BIG_BUTTON_HEIGHT)){
-                                            switch (e.type){
-                                                case SDL_MOUSEMOTION:
-                                                {
-                                                    if (!hasinteract){
-                                                    SDL_Rect srRect{0,BIG_BUTTON_HEIGHT*2,NINExNINE_WIDTH,BIG_BUTTON_HEIGHT};
-                                                    NINExNINE.render(&srRect,renderer,MapSizes);
-                                                    SDL_RenderPresent(renderer);
-                                                    hasinteract = true;
-                                                    }
-                                                    break;
-                                                }
-                                                case SDL_MOUSEBUTTONDOWN:
-                                                {
-                                                    if (computer_on) Computer.setGameData(9,9);
-                                                        else Gameplay.setGameData(9,9);
-                                                    haschooseMap = true;
-                                                    break;
-                                                }
-                                            }
-                                        }
-                                            else if (TWELVExTWELVE.IsInside(&e,TWELVExTWELVE_WIDTH,BIG_BUTTON_HEIGHT)){
-                                                switch (e.type){
-                                                    case SDL_MOUSEMOTION:
-                                                    {
-                                                        if (!hasinteract){
-                                                        SDL_Rect srRect{0,BIG_BUTTON_HEIGHT*3,TWELVExTWELVE_WIDTH,BIG_BUTTON_HEIGHT};
-                                                        TWELVExTWELVE.render(&srRect,renderer,MapSizes);
-                                                        SDL_RenderPresent(renderer);
-                                                        hasinteract = true;
-                                                        }
-                                                        break;
-                                                    }
-                                                    case SDL_MOUSEBUTTONDOWN:
-                                                    {
-                                                        if (computer_on) Computer.setGameData(12,12);
-                                                            else Gameplay.setGameData(12,12);
-                                                        haschooseMap = true;
-                                                        break;
-                                                    }
-                                                }
-                                            }
-                                                else if (Back.IsInside(&e,BACK_BUTTON_WIDTH,BACK_BUTTON_HEIGHT)){
-                                                    switch (e.type){
-                                                    case SDL_MOUSEMOTION:
-                                                        {
-                                                            if (!hasinteract){
-                                                                SDL_Rect srRect{srBACK_BUTTON_POSX,srBACK_BUTTON_POSY,BACK_BUTTON_WIDTH,BACK_BUTTON_HEIGHT};
-                                                                Back.render(&srRect,renderer,MapSizes);
-                                                                SDL_RenderPresent(renderer);
-                                                                hasinteract = true;
-                                                            }
-                                                            break;
-                                                        }
-
-                                                    case SDL_MOUSEBUTTONDOWN:
-                                                        {
-                                                            mainmenu = true;
-                                                            break;
-                                                        }
-                                                    }
-                                                }
-                                                else {
-                                                    hasinteract = false;
-                                                    SDL_SetRenderDrawColor( renderer, 0xFF, 0xFF, 0xFF, 0xFF );
-                                                    SDL_RenderClear(renderer);
-                                                    SDL_SetRenderDrawColor(renderer, 33, 40, 69, 4);
-                                                    SDL_RenderClear(renderer);
-                                                    SDL_RenderCopy(renderer,PlayButtons.gTexture,NULL,NULL);
-                                                    SDL_RenderPresent(renderer);
-                                                }
-
-                                if (haschooseMap){
-                                    SDL_SetRenderDrawColor( renderer, 0xFF, 0xFF, 0xFF, 0xFF );
-                                    SDL_RenderClear(renderer);
-                                    if (computer_on) Computer.run_computer(renderer,quit);
-                                        else Gameplay.run_vshuman(renderer,quit);
                                 }
                             }
+                            else {
+                                hasinteract = false;
+                                SDL_SetRenderDrawColor( renderer, 0xFF, 0xFF, 0xFF, 0xFF );
+                                SDL_RenderClear(renderer);
+                                SDL_SetRenderDrawColor(renderer, 33, 40, 69, 4);
+                                SDL_RenderClear(renderer);
+                                SDL_RenderCopy(renderer,PlayButtons.gTexture,NULL,NULL);
+                                SDL_RenderPresent(renderer);
+                            }
 
+                        }
+                            else {
+                                SDL_SetRenderDrawColor( renderer, 0xFF, 0xFF, 0xFF, 0xFF );
+                                SDL_RenderClear(renderer);
+                                if (computer_on) Computer.run_computer(renderer,play,mainmenu,haschooseMap,playagain);
+                                    else Gameplay.runvshuman(renderer,play,mainmenu,haschooseMap,playagain);
+
+                        }
                     }
-            }
+                }
+                if (playagain){
+                    playagain = false;
+                    play = true;
+                    SDL_SetRenderDrawColor( renderer, 0xFF, 0xFF, 0xFF, 0xFF );
+                    SDL_RenderClear(renderer);
+                    if (computer_on) Computer.run_computer(renderer,play,mainmenu,haschooseMap,playagain);
+                        else Gameplay.runvshuman(renderer,play,mainmenu,haschooseMap,playagain);
+                }
+                if (!play && !mainmenu && !playagain) quit = true;
+
           }
+        }
 
 }
 

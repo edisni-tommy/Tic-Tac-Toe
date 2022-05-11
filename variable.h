@@ -41,8 +41,29 @@ const int HOME_BUTTON_POSX = 569;
 const int HOME_BUTTON_POSY = 5;
 const int REPLAY_BUTTON_POSX = 529;
 const int REPLAY_BUTTON_POSY = 5;
-const int ULTI_BUTTON_WIDTH = 30;
-const int ULTI_BUTTON_HEIGHT = 30;
-
+const int ULTI_BUTTON_WIDTH = 32;
+const int ULTI_BUTTON_HEIGHT = 32;
+const int PLAYER1_POSX = 104;
+const int PLAYER2_POSX = 410;
+const int TIE_POSX = 286;
+const int SMALL_PLAYER1_WIDTH = 82;
+const int SMALL_PLAYER2_WIDTH = 84;
+const int SMALL_TIE_WIDTH = 23;
+const int SMALL_COMPUTER_WIDTH = 100;
+const int SMALL_PLAYER_WIDTH = 75;
+const int SMALL_STATE_HEIGHT = 14;
+const int BIG_PLAYER1_WIDTH = 105;
+const int BIG_PLAYER2_WIDTH = 108;
+const int BIG_TIE_WIDTH = 29;
+const int BIG_COMPUTER_WIDTH = 130;
+const int BIG_PLAYER_WIDTH = 95;
+const int BIG_STATE_HEIGHT = 15;
+const int BIG_NUMBER_WIDTH = 12;
+const int BIG_NUMBER_HEIGHT = 16;
+const int SMALL_NUMBER_HEIGHT = 14;
+const int SMALL_NUMBER_WIDTH = 10;
+const int WIN_POSX = 139;
+const int DRAW_POSX = 292;
+const int LOSE_POSX = 441;
 
 #endif // VARIABLE_
