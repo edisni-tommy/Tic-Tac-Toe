@@ -19,6 +19,7 @@ class Gameplay: public LTexture{
         std::string state = "X";
         LTexture UltiButton;
         LTexture HandleState;
+        LTexture gNum;
         Button Home, Replay;
         Button Player1, Player2, Tie;
         Button cntWin, cntDraw, cntLose;
@@ -36,7 +37,7 @@ class Gameplay: public LTexture{
         void draw_O(SDL_Renderer* &renderer, int col, int row);
         std::string check_win();
         void drawEndLine(SDL_Renderer* &renderer);
-        void runvshuman(SDL_Renderer* &renderer, bool &play,bool &mainmenu, bool &haschoosemap, bool &playagain);
+        void runvshuman(SDL_Renderer* &renderer, bool &play,bool &mainmenu, bool &haschoosemap, bool &playagain, bool &sound);
         void setGameData(int _height, int _width);
         void handleHomeButton(SDL_Event* e, SDL_Renderer* &renderer, bool &play, bool &mainmenu, bool &haschoosemap);
         void handleReplayButton(SDL_Event* e,SDL_Renderer* &renderer, bool &playagain);

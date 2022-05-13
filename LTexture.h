@@ -13,8 +13,8 @@ class LTexture{
     private:
         int pHeight;
         int pWidth;
-        TTF_Font *gFont = NULL;
     public :
+        TTF_Font *gFont = NULL;
         SDL_Texture* gTexture = NULL;
         void free(){
             if (gTexture != NULL){
@@ -75,7 +75,7 @@ class LTexture{
             free();
 
             //Render text surface
-            SDL_Surface* textSurface = TTF_RenderText_Solid( gFont, textureText.c_str(), textColor );
+            SDL_Surface* textSurface = TTF_RenderText_Blended( gFont, textureText.c_str(), textColor );
             if( textSurface == NULL )
             {
                 printf( "Unable to render text surface! SDL_ttf Error: %s\n", TTF_GetError() );

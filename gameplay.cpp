@@ -1,4 +1,5 @@
 #include "gameplay.h"
+#include <iostream>
 #define player1State "X"
 #define player2State "Y"
 
@@ -213,7 +214,7 @@ void Gameplay::update(SDL_Renderer* &renderer){
             }
         }
 }
-void Gameplay::runvshuman(SDL_Renderer* &renderer, bool &play, bool &mainmenu, bool &haschoosemap, bool &playagain){
+void Gameplay::runvshuman(SDL_Renderer* &renderer, bool &play, bool &mainmenu, bool &haschoosemap, bool &playagain, bool &sound){
     draw_board(renderer);
     createboardstate();
     UltiButton.loadMedia(renderer,"pictures/UltiButton.png");
@@ -239,8 +240,10 @@ void Gameplay::runvshuman(SDL_Renderer* &renderer, bool &play, bool &mainmenu, b
             cntDraw.SetPosition(DRAW_POSX+3,RES_POSY);
             cntLose.SetPosition(LOSE_POSX+3,RES_POSY);
         }
-    HitSound = Mix_LoadWAV("sounds/HitSound.wav");
-    UltiButtons = Mix_LoadWAV("sounds/UltiButton");
+    if (sound){
+        HitSound = Mix_LoadWAV("sounds/HitSound.wav");
+        UltiButtons = Mix_LoadWAV("sounds/UltiButton.wav");
+    }
     SDL_Event e;
     handleresult(renderer,RES_POSY);
     handleHomeButton(&e,renderer,play,mainmenu,haschoosemap);
@@ -252,7 +255,8 @@ void Gameplay::runvshuman(SDL_Renderer* &renderer, bool &play, bool &mainmenu, b
     {
 
         //Handle events on queue
-
+        if (boardSize > 5) handleSmallState(renderer,STATE_POSY);
+            else handleBigState(renderer,STATE_POSY);
         while( SDL_PollEvent( &e ) != 0 )
         {
             //User requests quit
@@ -268,8 +272,7 @@ void Gameplay::runvshuman(SDL_Renderer* &renderer, bool &play, bool &mainmenu, b
                 play = false;
                 break;
             }
-            if (boardSize > 5) handleSmallState(renderer,STATE_POSY);
-                else handleBigState(renderer,STATE_POSY);
+
             if (e.type == SDL_MOUSEBUTTONDOWN){
               getcoordinate();
               update(renderer);
@@ -390,6 +393,7 @@ void Gameplay::handleReplayButton(SDL_Event* e,SDL_Renderer* &renderer, bool &pl
             case SDL_MOUSEBUTTONDOWN:
             {
                 Mix_PlayChannel(-1,UltiButtons,0);
+                free();
                 playagain = true;
                 break;
             }
@@ -417,7 +421,7 @@ void Gameplay::handleSmallState(SDL_Renderer* &renderer, int &STATE_POSY){
     if (state != player1State){
         SDL_Rect srRect{0,44,SMALL_PLAYER1_WIDTH,SMALL_STATE_HEIGHT};
         Player1.render(&srRect,renderer,HandleState);
-        srRect = {104,59,SMALL_PLAYER2_WIDTH,SMALL_STATE_HEIGHT};
+        srRect = {104,60,SMALL_PLAYER2_WIDTH,SMALL_STATE_HEIGHT};
         Player2.render(&srRect,renderer,HandleState);
         srRect = {0,30,SMALL_TIE_WIDTH,SMALL_STATE_HEIGHT};
         Tie.render(&srRect,renderer,HandleState);
@@ -426,7 +430,7 @@ void Gameplay::handleSmallState(SDL_Renderer* &renderer, int &STATE_POSY){
         else {
             SDL_Rect srRect{104,45,SMALL_PLAYER1_WIDTH,SMALL_STATE_HEIGHT};
             Player1.render(&srRect,renderer,HandleState);
-            srRect = {0,57,SMALL_PLAYER2_WIDTH,SMALL_STATE_HEIGHT};
+            srRect = {0,59,SMALL_PLAYER2_WIDTH,SMALL_STATE_HEIGHT};
             Player2.render(&srRect,renderer,HandleState);
             srRect = {0,30,SMALL_TIE_WIDTH,SMALL_STATE_HEIGHT};
             Tie.render(&srRect,renderer,HandleState);
@@ -466,9 +470,9 @@ void Gameplay::handleBigState(SDL_Renderer* &renderer, int &STATE_POSY){
 }
 void Gameplay::handleresult(SDL_Renderer* &renderer, int &RES_POSY){
     SDL_SetRenderDrawColor(renderer,0xFF,0xFF,0xFF,0xFF);
-    SDL_Rect dsRect{WIN_POSX,RES_POSY,SMALL_NUMBER_WIDTH,SMALL_NUMBER_HEIGHT};
+    SDL_Rect dsRect{WIN_POSX,RES_POSY,SMALL_NUMBER_WIDTH*3,SMALL_NUMBER_HEIGHT};
     if (boardSize <= 5){
-        dsRect.w = BIG_NUMBER_WIDTH;
+        dsRect.w = BIG_NUMBER_WIDTH*3;
         dsRect.h = BIG_NUMBER_HEIGHT;
         dsRect.x += 3;
     }
@@ -476,24 +480,28 @@ void Gameplay::handleresult(SDL_Renderer* &renderer, int &RES_POSY){
     dsRect.x = DRAW_POSX;
     if (boardSize <= 5) dsRect.x += 3;
     SDL_RenderFillRect(renderer,&dsRect);
-    dsRect.x = LOSE_POSX;
-    if (boardSize <= 5) dsRect.x += 3;
+    dsRect.x = LOSE_POSX-5;
+    if (boardSize <= 5) dsRect.x += 8;
     SDL_RenderFillRect(renderer,&dsRect);
     if (boardSize > 5){
-        SDL_Rect srRect{cntwin*SMALL_NUMBER_WIDTH,71,SMALL_NUMBER_WIDTH,SMALL_NUMBER_HEIGHT};
-        cntWin.render(&srRect,renderer,HandleState);
-        srRect = {cntdraw*SMALL_NUMBER_WIDTH,71,SMALL_NUMBER_WIDTH,SMALL_NUMBER_HEIGHT};
-        cntDraw.render(&srRect,renderer,HandleState);
-        srRect = {cntlose*SMALL_NUMBER_WIDTH,71,SMALL_NUMBER_WIDTH,SMALL_NUMBER_HEIGHT};
-        cntLose.render(&srRect,renderer,HandleState);
+            gNum.gFont = TTF_OpenFont("fonts/Neufreit-Regular.ttf",16);
+            SDL_Color textcolor = {0,0,0};
+            gNum.loadFromRenderedText(renderer,std::to_string(cntwin),textcolor);
+            gNum.Render(WIN_POSX,RES_POSY,renderer,NULL);
+            gNum.loadFromRenderedText(renderer,std::to_string(cntdraw),textcolor);
+            gNum.Render(DRAW_POSX,RES_POSY,renderer,NULL);
+            gNum.loadFromRenderedText(renderer,std::to_string(cntlose),textcolor);
+            gNum.Render(LOSE_POSX-5,RES_POSY,renderer,NULL);
     }
         else {
-            SDL_Rect srRect{cntwin*(BIG_NUMBER_WIDTH-0.5),86,BIG_NUMBER_WIDTH,BIG_NUMBER_HEIGHT};
-            cntWin.render(&srRect,renderer,HandleState);
-            srRect = {cntdraw*(BIG_NUMBER_WIDTH-0.5),86,BIG_NUMBER_WIDTH,BIG_NUMBER_HEIGHT};
-            cntDraw.render(&srRect,renderer,HandleState);
-            srRect = {cntlose*(BIG_NUMBER_WIDTH-0.5),86,BIG_NUMBER_WIDTH,BIG_BUTTON_HEIGHT};
-            cntLose.render(&srRect,renderer,HandleState);
+            gNum.gFont = TTF_OpenFont("fonts/Neufreit-Regular.ttf",18);
+            SDL_Color textcolor = {0,0,0};
+            gNum.loadFromRenderedText(renderer,std::to_string(cntwin),textcolor);
+            gNum.Render(WIN_POSX+3,RES_POSY,renderer,NULL);
+            gNum.loadFromRenderedText(renderer,std::to_string(cntdraw),textcolor);
+            gNum.Render(DRAW_POSX+3,RES_POSY,renderer,NULL);
+            gNum.loadFromRenderedText(renderer,std::to_string(cntlose),textcolor);
+            gNum.Render(LOSE_POSX+3,RES_POSY,renderer,NULL);
         }
     SDL_RenderPresent(renderer);
 }

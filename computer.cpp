@@ -55,13 +55,14 @@ int Computer::heuristic_val(){
     for (int i = 1; i <= boardSize; i++)
         for (int j = 1; j <= boardSize; j++){
             if (board_state[i][j] == "X" ){
-                int numblock = 0;
                 int curval = 1;
                 for (int t = 0; t <= 3; t++){
+                    int numblock = 0, blockend = 0, numempty = 0;
                     int cntline = 1, cntscore = GoodMoveScore;
                     for (int r = 1; r <= int((winif+1)/2); r++){
                         if (!check_insideboard(i+r*dx[t],j+r*dy[t]) || board_state[i+r*dx[t]][j+r*dy[t]] == "O"){
                             numblock++;
+                            if (r == int((winif+1)/2)) blockend++;
                             break;
                         }
                             else if (board_state[i+r*dx[t]][j+r*dy[t]] == "X"){
@@ -69,11 +70,17 @@ int Computer::heuristic_val(){
                                 if (board_state[i+(r-1)*dx[t]][j+(r-1)*dy[t]] == "X" ) cntscore += GoodMoveScore;
                                     else cntscore += GoodMoveScore/2;
                                 }
-                                    else cntline++;
+                                    else {
+                                        numempty++;
+                                        cntline++;
+                                    }
                     }
+                    if (numempty >= 2) blockend++;
+                    numempty = 0;
                     for (int r = 1; r <= int((winif+1)/2); r++){
                         if (!check_insideboard(i-r*dx[t],j-r*dy[t]) || board_state[i-r*dx[t]][j-r*dy[t]] == "O"){
                             numblock++;
+                            if (r == int((winif+1)/2)) blockend++;
                             break;
                         }
                             else if (board_state[i-r*dx[t]][j-r*dy[t]] == "X"){
@@ -81,27 +88,36 @@ int Computer::heuristic_val(){
                                 if (board_state[i-(r-1)*dx[t]][j-(r-1)*dy[t]] == "X") cntscore += GoodMoveScore;
                                     else cntscore += GoodMoveScore/2;
                             }
-                                else cntline++;
+                                else {
+                                    numempty++;
+                                    cntline++;
+                                }
                     }
+                    if (numempty >=2 ) blockend++;
                     if (cntline >= winif){
-                        if (cntscore == winif*GoodMoveScore-GoodMoveScore && numblock <= 0) cntscore = 1e5;
+                        if ((cntscore == winif*GoodMoveScore-GoodMoveScore) &&
+                            (numblock == 0 || ( numblock == 1 && blockend == 1))) cntscore = 1e5;
                             else if ((cntscore >= winif*GoodMoveScore-3*GoodMoveScore/2) ||
-                                     (cntscore == (winif-2)*GoodMoveScore && numblock == 0)) cntscore=1e4;
+                                     (cntscore == (winif-2)*GoodMoveScore && numblock == 0) ||
+                                     (cntscore == (winif-2)*GoodMoveScore && numblock == 1 && blockend <= 2)) cntscore=1e3;
                                 else if (numblock == 0) cntscore *= 2;
                                     else if (numblock == 2) continue;
-                       curval += cntscore;
+                       if (curval >= 1e3 && cntscore >= 1e3) curval += 2*cntscore;
+                            else curval += cntscore;
                         }
                     }
                 val += curval;
 
             }
                else if (board_state[i][j] == "O"){
-                    int numblock = 0, curval = 1 ;
+                    int curval = 1;
                     for (int t = 0; t <= 3; t++){
+                        int numblock = 0, blockend = 0, numempty = 0;
                         int cntline = 1, cntscore = GoodMoveScore;
                         for (int r = 1; r <=  int((winif+1)/2); r++){
                             if (!check_insideboard(i+r*dx[t],j+r*dy[t]) || board_state[i+r*dx[t]][j+r*dy[t]] == "X"){
                                 numblock++;
+                                if (r == int((winif+1)/2)) blockend++;
                                 break;
                             }
                                 else if (board_state[i+r*dx[t]][j+r*dy[t]] == "O"){
@@ -111,11 +127,17 @@ int Computer::heuristic_val(){
                                             cntscore += GoodMoveScore/2;
                                         }
                                 }
-                                    else cntline++;
+                                    else {
+                                        numempty++;
+                                        cntline++;
+                                    }
                         }
+                        if (numempty >= 2) blockend++;
+                        numempty = 0;
                         for (int r = 1; r <=  int((winif+1)/2); r++){
                             if (!check_insideboard(i-r*dx[t],j-r*dy[t]) || board_state[i-r*dx[t]][j-r*dy[t]] == "X"){
                                 numblock++;
+                                if (r == int((winif+1)/2)) blockend++;
                                 break;
                             }
                                 else if (board_state[i-r*dx[t]][j-r*dy[t]] == "O"){
@@ -125,15 +147,22 @@ int Computer::heuristic_val(){
                                            cntscore += GoodMoveScore/2;
                                         }
                                 }
-                                    else cntline++;
+                                    else {
+                                        numempty++;
+                                        cntline++;
+                                    }
                         }
+                        if (numempty >= 2) blockend++;
                         if (cntline >= winif){
-                            if (cntscore == winif*GoodMoveScore-GoodMoveScore && numblock <= 0) cntscore = 1e6;
+                            if ((cntscore == winif*GoodMoveScore-GoodMoveScore) &&
+                                (numblock == 0 || (numblock == 1 && blockend == 1))) cntscore = 1e6;
                                 else if ((cntscore >= winif*GoodMoveScore-3*GoodMoveScore/2) ||
-                                         (cntscore == (winif-2)*GoodMoveScore && numblock == 0)) cntscore=1e5;
+                                         (cntscore == (winif-2)*GoodMoveScore && numblock == 0) ||
+                                         (cntscore == (winif-2)*GoodMoveScore && numblock == 1 && blockend <= 2)) cntscore=1e4;
                                     else if (numblock == 0) cntscore *= 2;
                                         else if (numblock == 2) continue;
-                            curval += cntscore;
+                            if (curval >= 1e3 && cntscore >= 1e3) curval += 3*cntscore;
+                                else curval += cntscore*2;
                             }
                     }
                     val -= curval;
@@ -161,7 +190,7 @@ void Computer::find_bestmove(){
                 board_state[i][j] = "empty";
                 if (score > bestscore){
                     bestscore = score;
-                    std::cout << "bestscore: " << i <<" "<< j <<" "<< bestscore << '\n';
+                   // std::cout << "bestscore: " << i <<" "<< j <<" "<< bestscore << '\n';
                     row = i;
                     col = j;
                 }
@@ -170,7 +199,7 @@ void Computer::find_bestmove(){
     }
 }
 
-void Computer::run_computer(SDL_Renderer* &renderer, bool &play, bool &mainmenu, bool &haschoosemap, bool &playagain){
+void Computer::run_computer(SDL_Renderer* &renderer, bool &play, bool &mainmenu, bool &haschoosemap, bool &playagain, bool &sound){
     draw_board(renderer);
     createboardstate();
     UltiButton.loadMedia(renderer,"pictures/UltiButton.png");
@@ -196,16 +225,20 @@ void Computer::run_computer(SDL_Renderer* &renderer, bool &play, bool &mainmenu,
             cntDraw.SetPosition(DRAW_POSX+3,RES_POSY);
             cntLose.SetPosition(LOSE_POSX+3,RES_POSY);
         }
-    HitSound = Mix_LoadWAV("sounds/HitSound.wav");
-    UltiButtons = Mix_LoadWAV("sounds/UltiButton.wav");
-    if (HitSound == NULL || UltiButtons == NULL) printf( "Failed to load high sound effect! SDL_mixer Error: %s\n", Mix_GetError() );
+    if (sound){
+        HitSound = Mix_LoadWAV("sounds/HitSound.wav");
+        UltiButtons = Mix_LoadWAV("sounds/UltiButton.wav");
+    }
+
     if (winif > 3 && state == computer_state){
         col = (boardSize+1)/2;
         row = (boardSize+1)/2;
         update(renderer);
+        lastmove = {row,col};
         copylastmove = {row,col};
     }
     SDL_Event e;
+
     handleresult(renderer,RES_POSY);
     handleHomeButton(&e,renderer,play,mainmenu,haschoosemap);
     handleReplayButton(&e,renderer,playagain);
@@ -214,6 +247,8 @@ void Computer::run_computer(SDL_Renderer* &renderer, bool &play, bool &mainmenu,
     bool endgame = false;
     while (play){
         //Handle events on queue
+        if (boardSize > 5) handleSmallState(renderer,STATE_POSY);
+            else handleBigState(renderer,STATE_POSY);
         while( SDL_PollEvent( &e ) != 0 )
         {
             //User requests quit
@@ -228,8 +263,7 @@ void Computer::run_computer(SDL_Renderer* &renderer, bool &play, bool &mainmenu,
                       break;
                     }
                     handleReplayButton(&e,renderer,playagain);
-                    if (boardSize > 5) handleSmallState(renderer,STATE_POSY);
-                        else handleBigState(renderer,STATE_POSY);
+
                     if (playagain){
                         copylastmove = {0,0};
                         play = false;
@@ -238,7 +272,11 @@ void Computer::run_computer(SDL_Renderer* &renderer, bool &play, bool &mainmenu,
                     if (state == "X"){
                         find_bestmove();
                         lastmove = copylastmove;
-                        std::cout << row << '\n' << col << '\n';
+                        if (winif == 4 && lastmove.first == 3 && lastmove.second == 3 ){
+                            row = 2;
+                            col = 2;
+                        }
+                        //std::cout << row << '\n' << col << '\n';
                         copylastmove = {row,col};
                         update(renderer);
                         if (check_win() == "Player 1 win"){
@@ -262,9 +300,11 @@ void Computer::run_computer(SDL_Renderer* &renderer, bool &play, bool &mainmenu,
                             }
                     }
                         else if (e.type == SDL_MOUSEBUTTONDOWN){
-                            lastmove = copylastmove;
                             getcoordinate();
-                            copylastmove = {row,col};
+                            if (board_state[row][col] == "empty"){
+                                lastmove = copylastmove;
+                                copylastmove = {row,col};
+                            }
                             update(renderer);
                             if (check_win() == "Player 2 win"){
                                 cntlose++;
